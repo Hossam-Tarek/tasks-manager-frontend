@@ -7,16 +7,18 @@ import TaskCard from "@/components/TaskCard";
 import AddTaskForm from "@/components/AddTaskForm";
 
 export default function HomePage() {
-    const { tasks, loading, fetchTasks } = useTasks();
+    const { tasks, loading, fetchTasks, page, setPage, pagination } = useTasks();
     const [showModal, setShowModal] = useState(false);
     const [notification, setNotification] = useState("");
 
     const handleNotification = (msg: string) => {
         setNotification(msg);
-        setTimeout(() => setNotification(""), 3000); // auto-hide after 3s
+        setTimeout(() => setNotification(""), 3000);
     };
 
     if (loading) return <div>Loading tasks...</div>;
+
+    const totalPages = Math.ceil(pagination.total / pagination.per_page);
 
     return (
         <div className="p-6 space-y-6">
@@ -48,10 +50,11 @@ export default function HomePage() {
 
                         <AddTaskForm
                             onSuccess={() => {
-                                fetchTasks();       // refresh task grid
+                                fetchTasks(page); // refresh current page
                                 setShowModal(false); // close modal
+                                handleNotification("Task added successfully!");
                             }}
-                            onNotification={handleNotification} // show toast
+                            onNotification={handleNotification}
                         />
                     </div>
                 </div>
@@ -63,6 +66,39 @@ export default function HomePage() {
                     <TaskCard key={task.id} task={task} />
                 ))}
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex justify-center gap-2 mt-6">
+                    <button
+                        disabled={page <= 1}
+                        onClick={() => setPage(page - 1)}
+                        className={`px-3 py-1 rounded border ${
+                            page <= 1
+                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                : "bg-white text-gray-700 hover:bg-gray-100"
+                        }`}
+                    >
+                        Previous
+                    </button>
+
+                    <span className="px-3 py-1 border rounded bg-white">
+            Page {page} of {totalPages}
+          </span>
+
+                    <button
+                        disabled={page >= totalPages}
+                        onClick={() => setPage(page + 1)}
+                        className={`px-3 py-1 rounded border ${
+                            page >= totalPages
+                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                : "bg-white text-gray-700 hover:bg-gray-100"
+                        }`}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
