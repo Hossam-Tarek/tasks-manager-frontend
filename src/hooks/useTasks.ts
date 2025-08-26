@@ -8,12 +8,20 @@ export default function useTasks() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const fetchTasks = async () => {
+        try {
+            const res = await api.get("/tasks");
+            setTasks(res.data.data.tasks);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        api.get("/tasks")
-            .then((res) => setTasks(res.data.data.tasks))
-            .catch((err) => console.error(err))
-            .finally(() => setLoading(false));
+        fetchTasks();
     }, []);
 
-    return { tasks, loading };
+    return { tasks, loading, fetchTasks };
 }
